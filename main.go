@@ -17,13 +17,10 @@ func main() {
 
 	mux := httprouter.New()
 
-	/*http.HandleFunc("/", index)
-	http.HandleFunc("/api/v0/feed", fh.IndexHandler)
-	http.ListenAndServe(":"+port, nil)*/
-
 	mux.GET("/", index)
 	mux.GET("/api/v0/feed", fh.IndexHandler)
 	mux.POST("/api/v0/feed", fh.CreateFeedItemHandler)
+	mux.GET("/api/v0/feed/:id", fh.GetFeedItemHandler)
 	http.ListenAndServe(":"+port, mux)
 }
 

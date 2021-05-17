@@ -1,8 +1,10 @@
 package feeds
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -67,4 +69,20 @@ func PostFeedItem(req *http.Request) (FeedItem, error) {
 	//learn more about sql transactions with Go here https://stackoverflow.com/questions/40675365/get-back-newly-inserted-row-in-postgres-with-sqlx
 
 	return item, nil
+}
+
+func GetFeedItem(id string) (FeedItem, error) {
+	row := aws.DB.QueryRow("SELECT id, caption, url, created_at, updated_at FROM feeditem WHERE id = $1", id)
+
+	fi := FeedItem{}
+	err := row.Scan(&fi.Id, &fi.Caption, &fi.Url, &fi.CreatedAt, &fi.UpdatedAt)
+	switch {
+	case err == sql.ErrNoRows: //if the error returned is that we did not find anything (ther is no rows)
+		return fi, errors.New("error finding a feed item")
+	case err != nil: //other types of error, means there is an internal server error (something went wrong with our server)
+		log.Printf("Internal server error: %s", err.Error())
+		return fi, errors.New("error finding a feed item")
+	}
+
+	return fi, nil
 }

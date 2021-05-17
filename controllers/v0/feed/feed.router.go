@@ -33,3 +33,22 @@ func CreateFeedItemHandler(w http.ResponseWriter, r *http.Request, _ httprouter.
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(body)
 }
+
+func GetFeedItemHandler(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	id := ps.ByName("id")
+	//validation to make sure there is an id present
+	if id == "" {
+		http.Error(w, http.StatusText(400), http.StatusBadRequest)
+		return
+	}
+
+	i, err := GetFeedItem(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	body, _ := json.Marshal(i) //stringify the go struct
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(body) //we return the record to the client in a sensible payload
+}
