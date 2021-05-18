@@ -21,8 +21,12 @@ type FeedItem struct {
 
 type CreateFeedItemRequest struct {
 	Caption string `json:"caption"`
-	Url     string `json:"url"`
+	Url     string `json:"url"` //eg: imageName.jpeg
 }
+
+var (
+	s3s = aws.NewS3client()
+)
 
 func AllFeedItems() ([]FeedItem, error) {
 	rows, err := aws.DB.Query("SELECT id, caption, url, created_at, updated_at FROM feeditem;")
@@ -43,6 +47,15 @@ func AllFeedItems() ([]FeedItem, error) {
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+
+	for i, f := range fis {
+		u, err := s3s.GetGetSignedUrl(f.Url)
+		if err != nil {
+			log.Printf("Error getting getSignedUrl for key %s: %s", f.Url, err.Error())
+		}
+		fis[i].Url = u
+	}
+
 	return fis, nil
 }
 
@@ -57,7 +70,7 @@ func PostFeedItem(req *http.Request) (FeedItem, error) {
 	}
 
 	item.Caption = ni.Caption
-	item.Url = "https://s3-us-west-1.amazonaws.com/udacity-content/images/icon-eror.svg" //mock value for now
+	item.Url = ni.Url
 	item.CreatedAt = time.Now().Format(time.RFC3339)
 	item.UpdatedAt = time.Now().Format(time.RFC3339)
 
@@ -85,4 +98,10 @@ func GetFeedItem(id string) (FeedItem, error) {
 	}
 
 	return fi, nil
+}
+
+func GetGetSignedUrl(key string) (string, error) {
+	//c := aws.NewS3client()
+
+	return s3s.GetPutSignedUrl(key)
 }
