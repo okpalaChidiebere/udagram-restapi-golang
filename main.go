@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	fh "github.com/udacity/udagram-restapi-golang/controllers/v0/feed"
+	uh "github.com/udacity/udagram-restapi-golang/controllers/v0/users"
 )
 
 func main() {
@@ -22,20 +23,26 @@ func main() {
 		more on nesting routes with gorrila mux here https://stackoverflow.com/questions/25107763/nested-gorilla-mux-router-does-not-work
 		https://binx.io/blog/2018/11/27/go-gorilla/
 	*/
-	apiRouter := mux.NewRouter().PathPrefix("/api").Subrouter().StrictSlash(true)
+	indexRouter := r.PathPrefix("/api/v0").Subrouter().StrictSlash(true)
 
-	// This step is where we connect our "root" router and our "Subrouter" together.
-	r.PathPrefix("/api").Handler(apiRouter)
+	// This step is where we connect our "index" SubRouter to Feed SubRouter and Users SubRouter
+	feedRouter := indexRouter.PathPrefix("/feed").Subrouter().StrictSlash(true)
+	usersRouter := indexRouter.PathPrefix("/users").Subrouter().StrictSlash(true)
+
+	// Define "Subrouter" routes using indexRouter
+	indexRouter.Methods("GET").Path("/").HandlerFunc(indexRouterHandler)
 
 	// Define "root" routes using r
 	r.Methods("GET").Path("/").HandlerFunc(index)
 
-	// Define "Subrouter" routes using apiRouter, prefix is /api
-	apiRouter.Methods("GET").Path("/").HandlerFunc(api)
-	apiRouter.Methods("GET").Path("/v0/feed").HandlerFunc(fh.IndexHandler)
-	apiRouter.Methods("POST").Path("/v0/feed").HandlerFunc(fh.CreateFeedItemHandler)
-	apiRouter.Methods("GET").Path("/v0/feed/{id}").HandlerFunc(fh.GetFeedItemHandler)
-	apiRouter.Methods("GET").Path("/v0/feed/signed-url/{fileName}").HandlerFunc(fh.GetGetSignedUrlHandler)
+	// Define "Subrouter" routes using feedRouter, prefix is /api/v0/feed/...
+	feedRouter.Methods("GET").Path("/").HandlerFunc(fh.IndexHandler)
+	feedRouter.Methods("POST").Path("/").HandlerFunc(fh.CreateFeedItemHandler)
+	feedRouter.Methods("GET").Path("/{id}").HandlerFunc(fh.GetFeedItemHandler)
+	feedRouter.Methods("GET").Path("/signed-url/{fileName}").HandlerFunc(fh.GetGetSignedUrlHandler)
+
+	// Define "Subrouter" routes using usersRouter, prefix is /api/v0/users/...
+	usersRouter.Methods("GET").Path("/{id}").HandlerFunc(uh.GetUserHandler)
 
 	http.ListenAndServe(":"+port, r)
 }
@@ -44,6 +51,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "/api/v0/")
 }
 
-func api(w http.ResponseWriter, r *http.Request) {
+func indexRouterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "v0")
 }
