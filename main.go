@@ -29,6 +29,8 @@ func main() {
 	feedRouter := indexRouter.PathPrefix("/feed").Subrouter().StrictSlash(true)
 	usersRouter := indexRouter.PathPrefix("/users").Subrouter().StrictSlash(true)
 
+	authRouter := usersRouter.PathPrefix("/auth").Subrouter()
+
 	// Define "Subrouter" routes using indexRouter
 	indexRouter.Methods("GET").Path("/").HandlerFunc(indexRouterHandler)
 
@@ -44,6 +46,9 @@ func main() {
 	// Define "Subrouter" routes using usersRouter, prefix is /api/v0/users/...
 	usersRouter.Methods("GET").Path("/{id}").HandlerFunc(uh.GetUserHandler)
 
+	authRouter.Methods("GET").Path("").HandlerFunc(authIndex)               // ../api/v0/users/auth it was a little bit odd that i did not specify the index route "/" in the Path() method. But it works :)
+	authRouter.Methods("POST").Path("").HandlerFunc(uh.RegisterUserHandler) // ../api/v0/users/auth
+
 	http.ListenAndServe(":"+port, r)
 }
 
@@ -53,4 +58,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 func indexRouterHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "v0")
+}
+
+func authIndex(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "auth")
 }
