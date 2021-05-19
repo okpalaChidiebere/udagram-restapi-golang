@@ -16,9 +16,14 @@ type aws struct {
 	Aws_media_bucket string
 }
 
+type jwt struct {
+	Secret string
+}
+
 type Config struct {
 	postgres
 	aws
+	jwt
 }
 
 func NewConfig() *Config {
@@ -34,6 +39,9 @@ func NewConfig() *Config {
 			Aws_region:       os.Getenv("AWS_REGION"),
 			Aws_profile:      os.Getenv("AWS_PROFILE"),
 			Aws_media_bucket: os.Getenv("AWS_MEDIA_BUCKET"),
+		},
+		jwt{
+			os.Getenv("JWT_SECRET"),
 		},
 	}
 }

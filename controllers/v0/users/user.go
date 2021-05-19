@@ -9,8 +9,14 @@ import (
 	"time"
 
 	"github.com/badoux/checkmail"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/udacity/udagram-restapi-golang/aws"
+	"github.com/udacity/udagram-restapi-golang/config"
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	c = config.NewConfig()
 )
 
 type User struct {
@@ -44,6 +50,19 @@ func GetUserByPk(email string) (User, error) {
 func generatePassword(plainTextPassword string) string {
 	bs, _ := bcrypt.GenerateFromPassword([]byte(plainTextPassword), bcrypt.DefaultCost) //the default cost is 10 rounds
 	return string(bs)
+}
+
+func comparePasswords(hash, plainTextPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(plainTextPassword))
+	return err == nil
+}
+
+func generateJWT(user User) string {
+	atClaims := jwt.MapClaims{}
+	atClaims["user"] = user
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, _ := at.SignedString([]byte(c.Secret))
+	return token
 }
 
 func RegisterUser(req *http.Request) (interface{}, error) {
@@ -88,5 +107,57 @@ func RegisterUser(req *http.Request) (interface{}, error) {
 		return newUser, errors.New("Internal Server Error." + err.Error())
 	}
 
-	return newUser, nil
+	// Generate JWT
+	jwt := generateJWT(newUser)
+
+	return map[string]interface{}{
+		"token": jwt,
+		"user":  newUser,
+	}, nil
+	//return newUser, nil
+}
+
+func LoginUser(req *http.Request) (interface{}, error) {
+	user := User{}
+	ur := &RegisterUserRequest{}
+	err := json.NewDecoder(req.Body).Decode(ur)
+	if err != nil {
+		return user, err
+	}
+
+	// check email is valid
+	if err := checkmail.ValidateFormat(ur.Email); err != nil {
+		return user, errors.New("email is required or malformed")
+	}
+
+	// check email password valid
+	if ur.PlainTextPassword == "" {
+		return user, errors.New("password is required")
+	}
+
+	var authValid bool
+	// find the user
+	err = aws.DB.QueryRow("SELECT email, password_hash, created_at, updated_at FROM users WHERE email = $1", ur.Email).Scan(&user.Email, &user.Password_hash, &user.CreatedAt, &user.UpdatedAt)
+	switch {
+	case err == sql.ErrNoRows: // check that user exists
+		return user, errors.New("Unauthorized")
+	case err != nil: //other types of error, means there is an internal server error (something went wrong with our server)
+		log.Printf("Internal server error: %s", err.Error())
+		return user, err
+	}
+
+	// check that the password matches
+	authValid = comparePasswords(user.Password_hash, ur.PlainTextPassword)
+	if !authValid {
+		return user, errors.New("Unauthorized")
+	}
+
+	// Generate JWT
+	jwtToken := generateJWT(user)
+
+	return map[string]interface{}{
+		"auth":  true,
+		"token": jwtToken,
+		"user":  user,
+	}, nil
 }

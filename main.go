@@ -46,8 +46,9 @@ func main() {
 	// Define "Subrouter" routes using usersRouter, prefix is /api/v0/users/...
 	usersRouter.Methods("GET").Path("/{id}").HandlerFunc(uh.GetUserHandler)
 
-	authRouter.Methods("GET").Path("").HandlerFunc(authIndex)               // ../api/v0/users/auth it was a little bit odd that i did not specify the index route "/" in the Path() method. But it works :)
-	authRouter.Methods("POST").Path("").HandlerFunc(uh.RegisterUserHandler) // ../api/v0/users/auth
+	authRouter.Methods("GET").Path("").HandlerFunc(authIndex)                  // ../api/v0/users/auth it was a little bit odd that i did not specify the index route "/" in the Path() method. But it works :)
+	authRouter.Methods("POST").Path("").HandlerFunc(uh.RegisterUserHandler)    // ../api/v0/users/auth
+	authRouter.Methods("POST").Path("/login").HandlerFunc(uh.LoginUserHandler) // ../api/v0/users/auth/login
 
 	http.ListenAndServe(":"+port, r)
 }
