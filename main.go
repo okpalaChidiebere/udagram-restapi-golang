@@ -49,6 +49,10 @@ func main() {
 	authRouter.Methods("GET").Path("").HandlerFunc(authIndex)                  // ../api/v0/users/auth it was a little bit odd that i did not specify the index route "/" in the Path() method. But it works :)
 	authRouter.Methods("POST").Path("").HandlerFunc(uh.RegisterUserHandler)    // ../api/v0/users/auth
 	authRouter.Methods("POST").Path("/login").HandlerFunc(uh.LoginUserHandler) // ../api/v0/users/auth/login
+	authRouter.Methods("GET").Path("/verification").HandlerFunc(uh.Adapt(
+		http.HandlerFunc(uh.VerificationHandler),
+		uh.RequireAuthHandler(),
+	).ServeHTTP) // ../api/v0/users/auth/verification
 
 	http.ListenAndServe(":"+port, r)
 }
