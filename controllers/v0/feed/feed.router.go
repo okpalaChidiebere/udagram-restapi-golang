@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Get all feed items
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	fds, err := AllFeedItems()
 	if err != nil {
@@ -22,6 +23,7 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+//create a feed item
 func CreateFeedItemHandler(w http.ResponseWriter, r *http.Request) {
 	i, err := PostFeedItem(r)
 	if err != nil {
@@ -34,6 +36,7 @@ func CreateFeedItemHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+// get a specific feeditem by Primary Key
 func GetFeedItemHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, ok := vars["id"]
@@ -53,6 +56,7 @@ func GetFeedItemHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body) //we return the record to the client in a sensible payload
 }
 
+// Get a signed url to put a new item in the bucket
 func GetGetSignedUrlHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fn, ok := vars["fileName"]

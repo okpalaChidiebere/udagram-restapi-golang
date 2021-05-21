@@ -9,7 +9,7 @@ import (
 
 func GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, ok := vars["id"]
+	id, ok := vars["id"] //FYI: the primary key for this table is the email. So we expect an email value as the id
 	if !ok {
 		http.Error(w, http.StatusText(400), http.StatusBadRequest)
 		return

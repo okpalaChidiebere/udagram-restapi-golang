@@ -27,6 +27,7 @@ func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
 	return h
 }
 
+//register a new user
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	i, err := RegisterUser(r)
 	if err != nil {
@@ -44,6 +45,7 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+//login a user
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	i, err := LoginUser(r)
 	if err != nil {
@@ -60,6 +62,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(body)
 }
 
+//Verify a user session
 func VerificationHandler(w http.ResponseWriter, r *http.Request) {
 	body, _ := json.Marshal(map[string]interface{}{
 		"auth":    true,
