@@ -60,6 +60,7 @@ func main() {
 
 	//Define not protected feedRouter. The RequireAuthHandler middleare will not apply to them
 	feedRouter.Methods("GET").Path("").HandlerFunc(fh.IndexHandler)
+	feedRouter.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {})
 
 	//Define protected feedRouter
 	authFeedRouter.Methods("POST").Path("").HandlerFunc(fh.CreateFeedItemHandler)
@@ -70,12 +71,13 @@ func main() {
 	usersRouter.Methods("GET").Path("/{id}").HandlerFunc(uh.GetUserHandler)
 
 	authRouter.Methods("GET").Path("").HandlerFunc(authIndex)                  // ../api/v0/users/auth it was a little bit odd that i did not specify the index route "/" in the Path() method. But it works :)
-	authRouter.Methods("POST").Path("").HandlerFunc(uh.RegisterUserHandler)    // ../api/v0/users/auth
+	authRouter.Methods("POST").Path("/").HandlerFunc(uh.RegisterUserHandler)   // ../api/v0/users/auth/
 	authRouter.Methods("POST").Path("/login").HandlerFunc(uh.LoginUserHandler) // ../api/v0/users/auth/login
 	authRouter.Methods("GET").Path("/verification").HandlerFunc(uh.Adapt(
 		http.HandlerFunc(uh.VerificationHandler),
 		uh.RequireAuthHandler(),
 	).ServeHTTP) // ../api/v0/users/auth/verification
+	authRouter.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}) //you actually have to define the OPTIONS method for CORS preflight
 
 	http.ListenAndServe(":"+port, r)
 }

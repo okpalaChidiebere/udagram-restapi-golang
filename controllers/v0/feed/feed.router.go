@@ -18,7 +18,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, _ := json.Marshal(fds) //stringify the go struct
+	body, _ := json.Marshal(map[string]interface{}{
+		"count": len(fds),
+		"rows":  fds,
+	}) //stringify the go struct
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(body)
 }

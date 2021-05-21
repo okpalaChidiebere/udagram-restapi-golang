@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	c = config.NewConfig()
+	c    = config.NewConfig()
+	sess *session.Session
 )
 
 type S3client struct {
@@ -20,15 +21,19 @@ type S3client struct {
 // Creates a S3 client
 func createS3Client() *s3.S3 {
 
-	/*
-		Initialize a session that the SDK will use to load
-		credentials from the shared credentials file ~/.aws/credentials
-		and region from the shared configuration file ~/.aws/config.
-	*/
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		Profile:           c.Aws_profile,
-	}))
+	if c.Aws_profile != "DEPLOYED" {
+		/*
+			Initialize a session that the SDK will use to load
+			credentials from the shared credentials file ~/.aws/credentials
+			and region from the shared configuration file ~/.aws/config.
+		*/
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+			Profile:           c.Aws_profile,
+		}))
+	} else {
+		sess = session.Must(session.NewSession())
+	}
 
 	svc := s3.New(sess, aws.NewConfig().WithRegion(c.Aws_region))
 	return svc
