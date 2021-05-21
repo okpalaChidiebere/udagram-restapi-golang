@@ -38,10 +38,21 @@ func main() {
 	r.Methods("GET").Path("/").HandlerFunc(index)
 
 	// Define "Subrouter" routes using feedRouter, prefix is /api/v0/feed/...
-	feedRouter.Methods("GET").Path("/").HandlerFunc(fh.IndexHandler)
-	feedRouter.Methods("POST").Path("/").HandlerFunc(fh.CreateFeedItemHandler)
-	feedRouter.Methods("GET").Path("/{id}").HandlerFunc(fh.GetFeedItemHandler)
-	feedRouter.Methods("GET").Path("/signed-url/{fileName}").HandlerFunc(fh.GetGetSignedUrlHandler)
+	authFeedRouter := feedRouter.PathPrefix("").Subrouter() //this subRouter under feedRouter
+	/*
+		What we are doing here is we are type casting custom type Adapter to a mux.Middleware type
+		the root type for our Adapter is func(http.Handler) http.Handler which is thesame to Middleware type. This is why we are able to do this
+		https://pkg.go.dev/github.com/gorilla/mux@v1.8.0#MiddlewareFunc
+	*/
+	authFeedRouter.Use(mux.MiddlewareFunc(uh.RequireAuthHandler())) //we make the subrouter from feedRouter to be protected
+
+	//Define not protected feedRouter. The RequireAuthHandler middleare will not apply to them
+	feedRouter.Methods("GET").Path("").HandlerFunc(fh.IndexHandler)
+
+	//Define protected feedRouter
+	authFeedRouter.Methods("POST").Path("").HandlerFunc(fh.CreateFeedItemHandler)
+	authFeedRouter.Methods("GET").Path("/{id}").HandlerFunc(fh.GetFeedItemHandler)
+	authFeedRouter.Methods("GET").Path("/signed-url/{fileName}").HandlerFunc(fh.GetGetSignedUrlHandler)
 
 	// Define "Subrouter" routes using usersRouter, prefix is /api/v0/users/...
 	usersRouter.Methods("GET").Path("/{id}").HandlerFunc(uh.GetUserHandler)
