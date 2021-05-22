@@ -13,7 +13,13 @@ import (
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		/*
+			By default, Elastic Beanstalk configures the nginx proxy to forward
+			requests to your application on port 5000. You can override the default
+			port by setting the PORT system property to the port on which your main
+			application listens.
+		*/
+		port = "5000"
 	}
 
 	r := mux.NewRouter()
@@ -79,7 +85,10 @@ func main() {
 	).ServeHTTP) // ../api/v0/users/auth/verification
 	authRouter.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}) //you actually have to define the OPTIONS method for CORS preflight
 
-	http.ListenAndServe(":"+port, r)
+	//http.ListenAndServe(":"+port, r)
+	http.Handle("/favicon.ico", http.NotFoundHandler()) //nice to have :)
+	http.Handle("/", r)
+	http.ListenAndServe(":"+port, nil)
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

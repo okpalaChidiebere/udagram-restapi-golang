@@ -32,6 +32,12 @@ func createS3Client() *s3.S3 {
 			Profile:           c.Aws_profile,
 		}))
 	} else {
+		/*
+			Use EC2 Instance Role to assign credentials to application running on an EC2 instance.
+			This removes the need to manage credential files in production.
+
+			Make sure to assign the IAM user the limited correct permissions. In this case, access to our S3 bucket and/or RDS
+		*/
 		sess = session.Must(session.NewSession())
 	}
 
