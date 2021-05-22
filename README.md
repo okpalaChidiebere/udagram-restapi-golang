@@ -64,3 +64,17 @@ More on SQL
 
 More GOlang codding
 [https://github.com/jeastham1993/football-league-manager-app/tree/master/src/team-service](https://github.com/jeastham1993/football-league-manager-app/tree/master/src/team-service)
+
+
+For Automatic Bug reporting for your server in a more pleasant UI use [Senty](https://sentry.io/welcome/)
+Other tools you can use to monitoring the state of your syste,
+- [Cloudfare](https://www.cloudflare.com/)
+- [Datadog](https://www.datadoghq.com/product/)
+- You can use AWS native tools like [Cloudront](https://aws.amazon.com/cloudwatch/)
+
+For concurrent testing, you can use [Siege](https://www.joedog.org/siege-manual/). Becareful with this one. AWS might block your local IP address if you overdoo it
+
+
+For Scaling Up, Increasing the compute power of your server, or Scaling Out (Adding more instance), look at the links
+- For scaling on EBS [https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environments-cfg-autoscaling-triggers.html](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environments-cfg-autoscaling-triggers.html)
+- [https://aws.amazon.com/blogs/database/scaling-your-amazon-rds-instance-vertically-and-horizontally/](https://aws.amazon.com/blogs/database/scaling-your-amazon-rds-instance-vertically-and-horizontally/)
